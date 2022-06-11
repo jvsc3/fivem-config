@@ -94,11 +94,20 @@ const GetConfigData = (pKey) => {
                 }
 
                 for (let j = 0; j < configIniLineValues.length; j++) {
+                    if (configIniLineValues[j].value.toLowerCase() == 'yes') {
+                        configIniLineValues[j].value = true;
+                    }
+                    else if (configIniLineValues[j].value.toLowerCase() == 'no') {
+                        configIniLineValues[j].value = false;
+                    }
+                }
+
+                for (let j = 0; j < configIniLineValues.length; j++) {
                     if (configIniLineValues[j].value.length > 1024 * 1024) {
                         console.log(`WARNING: The config.ini has a value of the key "${pKey}" is ${configIniLineValues[j].value.length / 1024 / 1024}MB, which is bigger than 1MB.`);
                     }
                 }
-                
+   
                 return configIniLineValues;
             }
 
