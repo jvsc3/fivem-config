@@ -1,3 +1,5 @@
+let CONFIG_CACHE = {};
+
 const CheckConfigHeap = () => {
     const configIni = fs.readFileSync(CONFIG_PARSER_CONFIG.FILE_PATH, 'utf8');
     const configIniSize = Buffer.byteLength(configIni, 'utf8');
@@ -5,6 +7,52 @@ const CheckConfigHeap = () => {
     if (configIniSize > configMaxHeap * 1024 * 1024) {
         console.log(`WARNING: The config.ini is ${configIniSize / 1024 / 1024}MB, which is bigger than the max heap size of ${CONFIG_PARSER_CONFIG.CONFIG_MAX_HEAP}MB.`);
     }
+}
+
+const ReloadConfigCache = async () => {
+    CONFIG_CACHE = {};
+    const configIni = fs.readFileSync(CONFIG_PARSER_CONFIG.FILE_PATH, 'utf8');
+    const configIniSize = Buffer.byteLength(configIni, 'utf8');
+    const configMaxHeap = parseInt(CONFIG_PARSER_CONFIG.CONFIG_MAX_HEAP.replace('M', ''));
+    if (configIniSize > configMaxHeap * 1024 * 1024) {
+        console.log(`WARNING: The config.ini is ${configIniSize / 1024 / 1024}MB, which is bigger than the max heap size of ${CONFIG_PARSER_CONFIG.CONFIG_MAX_HEAP}MB.`);
+    }
+    const configIniLines = configIni.split('\n');
+    for (let i = 0; i < configIniLines.length; i++) {
+        const configIniLine = configIniLines[i];
+        if (configIniLine.indexOf('[') != -1) {
+            const configIniSection = configIniLine.substring(configIniLine.indexOf('[') + 1, configIniLine.indexOf(']'));
+            CONFIG_CACHE[configIniSection] = {};
+        } else if (configIniLine.indexOf('=') != -1) {
+            const configIniKey = configIniLine.substring(0, configIniLine.indexOf('='));
+            const configIniValue = configIniLine.substring(configIniLine.indexOf('=') + 1);
+            CONFIG_CACHE[configIniSection][configIniKey] = configIniValue;
+        }
+    }
+}
+
+const LoadConfigCache = async () => {
+    const configIni = fs.readFileSync(CONFIG_PARSER_CONFIG.FILE_PATH, 'utf8');
+    const configIniSize = Buffer.byteLength(configIni, 'utf8');
+    if (configIniSize > 0) {
+        const configIniLines = configIni.split('\n');
+        for (let i = 0; i < configIniLines.length; i++) {
+            const configIniLine = configIniLines[i];
+            if (configIniLine.indexOf('=') != -1) {
+                const configIniKey = configIniLine.substring(0, configIniLine.indexOf('='));
+                const configIniValue = configIniLine.substring(configIniLine.indexOf('=') + 1);
+                CONFIG_CACHE[configIniKey] = configIniValue;
+            }
+        }
+    }
+}
+
+setTick(() => {
+    LoadConfigCache();
+});
+
+const GetCacheValue = (key) => {
+    return CONFIG_CACHE[key];
 }
 
 const GetConfigData = (pKey) => {
@@ -114,5 +162,5 @@ const GetConfigData = (pKey) => {
         }
     }
 }
-
+                        
 exports("GetConfigData", GetConfigData);
