@@ -47,10 +47,6 @@ const LoadConfigCache = async () => {
     }
 }
 
-setTick(() => {
-    LoadConfigCache();
-});
-
 const GetCacheValue = (key) => {
     return CONFIG_CACHE[key];
 }
@@ -151,6 +147,12 @@ const GetConfigData = (pKey) => {
                 }
 
                 for (let j = 0; j < configIniLineValues.length; j++) {
+                    if (configIniLineValues[j].value.length == 0) {
+                        console.log(`WARNING: The config.ini has a empty value in the key "${pKey}".`);
+                    }
+                }
+
+                for (let j = 0; j < configIniLineValues.length; j++) {
                     if (configIniLineValues[j].value.length > 1024 * 1024) {
                         console.log(`WARNING: The config.ini has a value of the key "${pKey}" is ${configIniLineValues[j].value.length / 1024 / 1024}MB, which is bigger than 1MB.`);
                     }
@@ -162,5 +164,13 @@ const GetConfigData = (pKey) => {
         }
     }
 }
-                        
+                
+on("onResourceStart", (resourceName) => {
+    if(GetCurrentResourceName() != resourceName) {
+      return;
+    }
+  
+    LoadConfigCache();
+  });
+
 exports("GetConfigData", GetConfigData);
