@@ -157,6 +157,14 @@ const GetConfigData = (pKey) => {
                         console.log(`WARNING: The config.ini has a value of the key "${pKey}" is ${configIniLineValues[j].value.length / 1024 / 1024}MB, which is bigger than 1MB.`);
                     }
                 }
+
+                for (let j = 0; j < configIniLineValues.length; j++) {
+                    if (configIniLineValues[j].value.match(/[\u0600-\u06FF]/g)) {
+                        configIniLineValues[j].value = configIniLineValues[j].value.replace(/[\u0600-\u06FF]/g, function (a) {
+                            return '\\u' + ('000' + a.charCodeAt(0).toString(16)).substr(-4);
+                        });
+                    }
+                }
    
                 return configIniLineValues;
             }
@@ -164,7 +172,7 @@ const GetConfigData = (pKey) => {
         }
     }
 }
-                
+
 on("onResourceStart", (resourceName) => {
     if(GetCurrentResourceName() != resourceName) {
       return;
